@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Business Record Keeping System</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* General styles */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background-color: #007bff;
+      color: #fff;
+      padding: 20px;
+      text-align: center;
+    }
+    h1 {
+      margin: 0;
+    }
+    main {
+      padding: 20px;
+    }
+    section {
+      margin-bottom: 40px;
+    }
+    /* Form styles */
+    form {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    label {
+      margin-bottom: 10px;
+    }
+    input[type="text"],
+    input[type="number"],
+    textarea {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+      box-sizing: border-box;
+    }
+    button {
+      padding: 10px 20px;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      margin-left: 10px;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    /* Records list styles */
+    ul {
+      list-style-type: none;
+      padding: 0;
+    }
+    li {
+      padding: 10px;
+      border: 1px solid #ccc;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .button-container {
+      display: flex;
+    }
+    .delete-btn {
+      background-color: #dc3545;
+    }
+    .dont-delete-btn {
+      background-color: #ffc107;
+    }
+    /* Media queries for responsive design */
+    @media screen and (min-width: 768px) {
+      form {
+        width: 50%;
+        margin: 0 auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Business Record Keeping System</h1>
+  </header>
+  <main>
+  <h1 style="text-align:center;">Welcome, <?php echo $user_data['username']; ?></h1>
+    <button id="print-button">Print Records</button>
+    
+    <section id="expenditures">
+      <h2 style="text-align: center;">Expenditures</h2>
+      <form id="expenditure-form">
+        <label for="expenditure-name">Name:</label>
+        <input type="text" id="expenditure-name" name="expenditure-name" required>
+        <label for="expenditure-amount">Amount (UGX):</label>
+        <input type="number" id="expenditure-amount" name="expenditure-amount" required>
+        <button type="submit">Add Expenditure</button>
+      </form>
+      <ul id="expenditure-list"></ul>
+      <p id="expenditure-total">Total: 0 UGX</p>
+    </section>
+    
+    <section id="income">
+      <h2 style="text-align: center;">Income</h2>
+      <form id="income-form">
+        <label for="income-name">Name:</label>
+        <input type="text" id="income-name" name="income-name" required>
+        <label for="income-amount">Amount (UGX):</label>
+        <input type="number" id="income-amount" name="income-amount" required>
+        <button type="submit">Add Income</button>
+      </form>
+      <ul id="income-list"></ul>
+      <p id="income-total">Total: 0 UGX</p>
+    </section>
+    
+    <section id="others">
+      <h2 style="text-align: center;">Other Records</h2>
+      <form id="other-form">
+        <label for="other-name">Name:</label>
+        <input type="text" id="other-name" name="other-name" required>
+        <label for="other-amount">Amount (UGX):</label>
+        <input type="number" id="other-amount" name="other-amount" required>
+        <button type="submit">Add Record</button>
+      </form>
+      <ul id="other-list"></ul>
+      <p id="other-total">Total: 0 UGX</p>
+    </section>
+
+    <!-- Text Record Section -->
+    <section id="text-records">
+      <h2 style="text-align: center;">Text Records</h2>
+      <form id="text-record-form">
+        <label for="text-record">Record:</label>
+        <textarea id="text-record" name="text-record" rows="5" required></textarea>
+        <button type="submit">Save Record</button>
+      </form>
+      <ul id="text-record-list"></ul>
+    </section>
+
+    <!-- Logout Section -->
+    <section id="logout">
+      <h2 style="text-align: center;">Logout</h2>
+      <button id="logout-btn">Logout</button>
+    </section>
+  </main>
+  <script src="j.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const textRecordForm = document.getElementById('text-record-form');
+      const textRecordList = document.getElementById('text-record-list');
+
+      // Retrieve stored text records from localStorage
+      const storedTextRecords = JSON.parse(localStorage.getItem('textRecords')) || [];
+
+      // Display existing text records on page load
+      displayTextRecords();
+
+      // Event listener for text record form submission
+      textRecordForm.addEventListener('submit', function(event) {
+        event.preventDefault();
+        const textRecord = document.getElementById('text-record').value;
+
+        // Create a new text record object
+        const newRecord = {
+          id: Date.now(), // Unique ID based on timestamp
+          text: textRecord
+        };
+
+        // Add the new record to the stored text records
+        storedTextRecords.push(newRecord);
+
+        // Save updated text records back to localStorage
+        localStorage.setItem('textRecords', JSON.stringify(storedTextRecords));
+
+        // Clear the form input
+        textRecordForm.reset();
+
+        // Update the displayed text records
+        displayTextRecords();
+      });
+
+      // Function to display text records
+      function displayTextRecords() {
+        textRecordList.innerHTML = ''; // Clear existing list
+
+        storedTextRecords.forEach(record => {
+          const li = document.createElement('li');
+          li.textContent = record.text;
+
+          // Add buttons for each record: Delete and Don't Delete
+          const buttonContainer = document.createElement('div');
+          buttonContainer.classList.add('button-container');
+
+          const deleteBtn = document.createElement('button');
+          deleteBtn.textContent = 'Delete';
+          deleteBtn.classList.add('delete-btn');
+          deleteBtn.addEventListener('click', function() {
+            deleteTextRecord(record.id);
+          });
+
+          const dontDeleteBtn = document.createElement('button');
+          dontDeleteBtn.textContent = "Don't Delete";
+          dontDeleteBtn.classList.add('dont-delete-btn');
+          dontDeleteBtn.addEventListener('click', function() {
+            li.removeChild(buttonContainer);
+            alert('Record is kept.');
+          });
+
+          buttonContainer.appendChild(deleteBtn);
+          buttonContainer.appendChild(dontDeleteBtn);
+          li.appendChild(buttonContainer);
+          textRecordList.appendChild(li);
+        });
+      }
+
+      // Function to delete a text record
+      function deleteTextRecord(id) {
+        storedTextRecords.forEach((record, index) => {
+          if (record.id === id) {
+            storedTextRecords.splice(index, 1);
+          }
+        });
+
+        // Save updated text records back to localStorage
+        localStorage.setItem('textRecords', JSON.stringify(storedTextRecords));
+
+        // Update the displayed text records
+        displayTextRecords();
+      }
+
+      // Logout functionality
+      document.getElementById('logout-btn').addEventListener('click', function() {
+        // Clear user session data (if any)
+        localStorage.removeItem('users'); // Assuming users data is stored in localStorage
+
+        // Redirect to login page
+        window.location.href = 'signup.html';
+      });
+
+      // Print functionality
+      document.getElementById('print-button').addEventListener('click', function() {
+        window.print();
+      });
+    });
+  </script>
+</body>
+</html>
